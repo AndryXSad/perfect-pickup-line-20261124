@@ -51,7 +51,10 @@ def main() -> int:
     entry_path.write_text(line, encoding="utf-8")
     # Read back exactly what the judge will read: the file must hold the
     # gated line and nothing else — no trailing newline, no extra text.
-    if entry_path.read_text(encoding="utf-8") != line:
+    # Check both the text and the byte length, so an encoding surprise
+    # (a multi-byte character written differently) cannot slip through.
+    raw = entry_path.read_bytes()
+    if raw.decode("utf-8") != line or len(raw) != len(line.encode("utf-8")):
         raise SystemExit("entry.txt does not match the gated line")
     print(line)
     return 0
